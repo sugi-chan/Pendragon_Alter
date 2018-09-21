@@ -8,12 +8,17 @@ from random import choice
 from random import shuffle, randint
 
 rl_model_name = '9_18_run_4'
-
+'''
+basic card deck similar to what I typically use on my teams
+'''
 card_deck = ['quick','quick','quick',
              'arts','arts','arts','arts','arts','arts',
             'buster','buster','buster','buster','buster','buster']
-hp = 30
+hp = 30 #team hp set at 30 for now, enemy team is 110 or so
 
+'''
+first two classes track the player and enemy teams
+'''
 class team_chaldela:
     #hp is total team hitpoints
     #deck is the total 15 card deck of the team
@@ -33,12 +38,19 @@ class enemy_servants:
         self.hit_points = hp
         
 
-
+'''
+way to shuffle 15 card deck and deal 5 cards.
+for now cards are replaced. in FGO there is no replacement
+and deck is remade every 3 turns
+'''
 def deal_hand(deck):
     shuffle(deck)
     
     return deck[:5] 
-
+'''
+Next 3 Classes track the cards and give their damage, NP gain, and stars 
+that are created when they are played
+'''
 class Buster:
     def __init__(self, card_number):
         if card_number == 1:
@@ -89,7 +101,11 @@ class Quick:
             self.dmg = 1.12
             self.np_gain = 4
             self.stars = 8
-            
+'''
+Next 5 functions are used in the calculate damage function which is the core 
+part of the loop where the card choices by the player are translated into
+damage, np gain, stars created, critical damage is calculated etc.
+'''     
 #using the input list which is just a list of strings of card types
 # convert them into card objects which have stats and such
 def command_card_gen(card_type,current_card_num):
@@ -125,8 +141,9 @@ def first_card_mods(first_card):
         print('invalid command card')
     return dmg_modifier,np_mod,star_mod
 
-#since card chains of 3 have a bonus, this function can be 
-# used to apply them... work in progress
+#This function contains some of the rewards. 
+# At some point I actually listed as a reward of +2 which is actually
+# higher than winning. it worked, but may be a break in accepted protocol
 def card_chain_effect(cards_to_play,team_obj,round_reward):
     #print(cards_to_play)
     #takes command card chain (list), checks for chain, applies bonuses
@@ -152,7 +169,9 @@ def card_chain_effect(cards_to_play,team_obj,round_reward):
         #print('not a chain')
         buster_chain_mod = 1
     return buster_chain_mod, round_reward
-
+'''
+I am a fan of the DnD series called critical role so I couldnt resist
+'''
 def critical_role(team_obj):
     critical_chance = team_obj.current_stars*2
     critical_flip = randint(1,100)
@@ -176,7 +195,11 @@ def use_NP(team_obj,total_damage):
         #print('')
         team_obj.np_charge = 0
     return total_damage
-    
+'''
+core damage calculations, takes in a the card chain and outputs damage
+also the team class object and the rewards for the round so appropriate 
+adjustments can be made
+'''
 def calc_chain_damage(team_obj, card_chain, round_reward):
     total_damage = 0
     first_card = card_chain[0]
@@ -210,7 +233,9 @@ def calc_chain_damage(team_obj, card_chain, round_reward):
 
     return total_damage, round_reward
 
-#will need to adjust? to make it match the keras input
+'''
+function to pick the cards out of the dealt hand that the network selects
+'''
 def pick_cards(current_hand5,card_indexes = [0,1,2]):
     #cards can take on values of 0-4 and should be a list of ints
     #default is first 3 cards
@@ -219,13 +244,17 @@ def pick_cards(current_hand5,card_indexes = [0,1,2]):
         hand_to_play.append(current_hand5[i])
     
     return hand_to_play
-    
+'''
+used for testing, and 10% of the time cards are randomly selected
+'''
 def random_pick_cards():
     list1= list(itertools.permutations([0,1,2,3,4],3))
     hand = choice(list1)
     return hand 
-# fight till one team drops.     
 
+'''
+Function to check if a team is still alive
+'''
 def check_if_alive(team_instance):
     #if team's hp is higher than 0 than return true, 
     # false when one player drops to 0 or below
@@ -234,7 +263,15 @@ def check_if_alive(team_instance):
     else:
         return 'dead'
 
-
+'''
+Core of the process where the environment is created and bot is able 
+to train. tracks wins and losses, function fight_battle represents 1 game
+to be played
+the reset function makes it so the games are always initialized at the same point
+the reporting function is helpful for evaluating the output, I have it set 
+so when it reports it will also play through a game which helps to show bot behaviour
+as the training process goes on
+'''
 class Battle:
     
     def __init__(self, num_learning_rounds =None, learner = None, report_every=10000):
