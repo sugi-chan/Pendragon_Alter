@@ -2,7 +2,7 @@
 
 This repo contains the code to train a reinforcement learning based bot for the game Fate Grand Order as well as have the bot play FGO on a mobile device. See this medium post for details [here](https://medium.com/datadriveninvestor/project-pendragon-an-ai-bot-for-fate-grand-order-23f51b6e3268) on how that was done. 
 
-This repo is featured in this post INSERT BLOG LINK WHEN POSTED.
+This repo is featured in this post [here](https://towardsdatascience.com/project-pendragon-part-2-a-reinforcement-learning-bot-for-fate-grand-order-7bc75c87c4f3)
 
 the colesseum.py file contains the simulated FGO environment
 netlearner.py contains the network and related functions that help it train
